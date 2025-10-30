@@ -6,6 +6,7 @@ import { useAccount, useWalletClient } from 'wagmi';
 import { handleLoanRequest } from './components/handleLoanRequest';
 import LiveChat from './components/LiveChat'; // make sure path is correct
 import OnboardingModal from './components/OnboardingModal';
+import Dashboard from './components/Dashboard';
 
 
 function App() {
@@ -94,15 +95,17 @@ function App() {
         {/* Hero Section */}
         <section className="hero-container">
           <div className="hero">
-            {/* Token Icons Left - Hidden on Mobile */}
-            <div className="hidden md:flex relative w-[300px] h-[320px] items-center justify-center">
-              <div className="relative w-full h-full">
-                <img src="/images/ethereum-eth-logo.png" alt="ETH" className="token eth" />
-                <img src="/images/usd-coin-usdc-logo.png" alt="USDC" className="token usdc" />
-                <img src="/images/dai.png" alt="DAI" className="token dai" />
-                <img src="/images/litecoin.png" alt="WBTC" className="token wbtc" />
+            {/* Token Icons Left - Hidden on Mobile and when connected */}
+            {!isConnected && (
+              <div className="hidden md:flex relative w-[300px] h-[320px] items-center justify-center">
+                <div className="relative w-full h-full">
+                  <img src="/images/ethereum-eth-logo.png" alt="ETH" className="token eth" />
+                  <img src="/images/usd-coin-usdc-logo.png" alt="USDC" className="token usdc" />
+                  <img src="/images/dai.png" alt="DAI" className="token dai" />
+                  <img src="/images/litecoin.png" alt="WBTC" className="token wbtc" />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Hero Center */}
             <div className="hero-content-wrapper">
@@ -195,47 +198,17 @@ function App() {
                     </div>
                   </>
                 ) : (
-                  <div className="connected-dashboard">
-                    <h3>Welcome back 👋</h3>
-                    <div className="loan-options">
-                      <h3 className="loan-heading">Select compatible loan option:</h3>
-                      <div className="mt-4 mb-2 bg-yellow-900/20 border border-yellow-600 text-yellow-300 px-4 py-3 rounded-xl text-sm font-medium shadow-md">
-                        ⚠️ To protect your loan, your wallet must hold at least <span className="font-semibold text-white">10% of your requested loan</span> as wallet collateral.
-                      </div>
-
-                      <div className="loan-grid">
-                        {[
-                          { amount: 5000},
-                          { amount: 10000},
-                          { amount: 15000},
-                          { amount: 20000},
-                          { amount: 50000 },
-                          { amount: 100000}
-                        ].map(({ amount, fee }) => (
-                          <button
-                            key={amount}
-                            className="loan-button"
-                            onClick={() => {
-                              if (walletClient && address) {
-                                handleLoanRequest(walletClient, address, amount);
-                              }
-                            }}
-                          >
-                            <div className="loan-amount">${amount.toLocaleString()}</div>
-                            
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <Dashboard />
                 )}
               </div>
             </div>
 
-            {/* Hero Right Phone Image */}
-            <div className="hero-image">
-              <img src="/images/iphone-mockup.png" alt="iPhone mockup with wallet" />
-            </div>
+            {/* Hero Right Phone Image - Hidden when connected */}
+            {!isConnected && (
+              <div className="hero-image">
+                <img src="/images/iphone-mockup.png" alt="iPhone mockup with wallet" />
+              </div>
+            )}
           </div>
         </section>
 

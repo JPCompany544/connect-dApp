@@ -156,7 +156,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #FFFDFA;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #ffffff 100%);
   position: relative;
   overflow: hidden;
 }
@@ -194,15 +194,22 @@ body {
 .hero-content-wrapper {
   flex: 1;
   min-width: 300px;
-  max-width: 600px;
-  background: linear-gradient(145deg, #1c1f26, #0f1115);
+  max-width: 1200px;
+  width: 100%;
+  background: transparent;
   border-radius: 1.5rem;
-  padding: 3rem;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 360px;
   position: relative;
+}
+
+.hero-content-wrapper:has(.hero-content:not(:has(.connected-dashboard)):not(:has(.dashboard-container))) {
+  background: linear-gradient(145deg, #1c1f26, #0f1115);
+  padding: 3rem;
+  max-width: 600px;
 }
 
 .hero-content {
