@@ -8,96 +8,100 @@ const LiveTransactions = () => {
     const mockTransactions = [
       {
         id: '0x1a2b...3c4d',
-        type: 'Loan Issued',
+        wallet: '0x8b7A...34D2',
         amount: '$10,000',
-        time: '2 minutes ago',
-        status: 'confirmed'
+        time: '2 min ago',
+        status: 'Approved'
       },
       {
         id: '0x5e6f...7g8h',
-        type: 'Loan Repaid',
+        wallet: '0x4c3F...12A8',
         amount: '$5,000',
-        time: '15 minutes ago',
-        status: 'confirmed'
+        time: '15 min ago',
+        status: 'Approved'
       },
       {
         id: '0x9i0j...1k2l',
-        type: 'Loan Issued',
+        wallet: '0x2d1E...89B4',
         amount: '$25,000',
         time: '1 hour ago',
-        status: 'confirmed'
+        status: 'Pending'
       },
       {
         id: '0x3m4n...5o6p',
-        type: 'Collateral Added',
-        amount: '2.5 ETH',
+        wallet: '0x9f8C...56E3',
+        amount: '$2,500',
         time: '2 hours ago',
-        status: 'confirmed'
+        status: 'Approved'
       },
       {
         id: '0x7q8r...9s0t',
-        type: 'Loan Issued',
+        wallet: '0x6a5D...23F1',
         amount: '$50,000',
         time: '3 hours ago',
-        status: 'confirmed'
+        status: 'Rejected'
       }
     ];
 
     setTransactions(mockTransactions);
   }, []);
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'Loan Issued':
-        return '💰';
-      case 'Loan Repaid':
-        return '✅';
-      case 'Collateral Added':
-        return '🔒';
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-amber-100 text-amber-800';
+      case 'Rejected':
+        return 'bg-red-100 text-red-800';
       default:
-        return '📝';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="live-transactions-section">
-      <h2 className="section-title">Live Transactions</h2>
+    <div className="bg-white rounded-card shadow-card border border-border p-6 mb-6">
+      <h2 className="text-section-title text-text-primary mb-6">Live Transactions</h2>
       
-      <div className="transactions-container">
+      <div className="overflow-x-auto">
         {transactions.length === 0 ? (
-          <div className="empty-state">
-            <p>No recent transactions</p>
+          <div className="text-center py-12">
+            <p className="text-text-secondary">No recent transactions</p>
           </div>
         ) : (
-          <div className="transactions-table">
-            <div className="transactions-header">
-              <div className="th-type">Type</div>
-              <div className="th-amount">Amount</div>
-              <div className="th-time">Time</div>
-              <div className="th-status">Status</div>
-            </div>
-            
-            <div className="transactions-body">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-text-secondary">Wallet</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-text-secondary">Amount</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-text-secondary">Status</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-text-secondary">Time</th>
+              </tr>
+            </thead>
+            <tbody>
               {transactions.map((tx) => (
-                <div key={tx.id} className="transaction-row">
-                  <div className="td-type">
-                    <span className="tx-icon">{getTypeIcon(tx.type)}</span>
-                    <div className="tx-type-info">
-                      <span className="tx-type">{tx.type}</span>
-                      <span className="tx-id">{tx.id}</span>
-                    </div>
-                  </div>
-                  <div className="td-amount">{tx.amount}</div>
-                  <div className="td-time">{tx.time}</div>
-                  <div className="td-status">
-                    <span className={`status-badge ${tx.status}`}>
+                <tr 
+                  key={tx.id} 
+                  className="border-b border-border hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-4 px-4 text-sm font-mono text-text-secondary">
+                    {tx.wallet}
+                  </td>
+                  <td className="py-4 px-4 text-sm font-semibold text-text-primary">
+                    {tx.amount}
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(tx.status)}`}>
                       {tx.status}
                     </span>
-                  </div>
-                </div>
+                  </td>
+                  <td className="py-4 px-4 text-sm text-text-secondary">
+                    {tx.time}
+                  </td>
+                </tr>
               ))}
-            </div>
-          </div>
+            </tbody>
+          </table>
         )}
       </div>
     </div>

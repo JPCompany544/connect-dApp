@@ -42,55 +42,88 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="loan-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Loan Summary</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
+      <div className="bg-white rounded-card shadow-2xl max-w-md w-full mx-4 animate-slideUp" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="text-section-title text-text-primary font-bold">Loan Summary</h2>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-text-secondary hover:text-text-primary transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <div className="modal-content">
-          <div className="summary-row">
-            <span className="summary-label">Loan Amount</span>
-            <div className="summary-value-group">
-              <span className="summary-value">${loan.amount.toLocaleString()}</span>
-              <span className="summary-value-eth">{loanInETH} ETH</span>
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          {/* Loan Amount */}
+          <div className="flex items-center justify-between py-3 border-b border-border">
+            <span className="text-text-secondary">Loan Amount</span>
+            <div className="text-right">
+              <div className="text-lg font-bold text-text-primary">${loan.amount.toLocaleString()}</div>
+              <div className="text-sm text-text-secondary">{loanInETH} ETH</div>
             </div>
           </div>
 
-          <div className="summary-row">
-            <span className="summary-label">Fee (2%)</span>
-            <div className="summary-value-group">
-              <span className="summary-value">${loan.fee.toLocaleString()}</span>
-              <span className="summary-value-eth">{feeInETH} ETH</span>
+          {/* Fee */}
+          <div className="flex items-center justify-between py-3 border-b border-border">
+            <span className="text-text-secondary">Processing & Collateral Fee (10%)</span>
+            <div className="text-right">
+              <div className="text-lg font-bold text-text-primary">${loan.fee.toLocaleString()}</div>
+              <div className="text-sm text-text-secondary">{feeInETH} ETH</div>
             </div>
           </div>
 
-          <div className="summary-divider"></div>
-
-          <div className="summary-row total-row">
-            <span className="summary-label">Total Repayment</span>
-            <div className="summary-value-group">
-              <span className="summary-value">${loan.total.toLocaleString()}</span>
-              <span className="summary-value-eth">{totalInETH} ETH</span>
+          {/* Total */}
+          <div className="flex items-center justify-between py-3">
+            <span className="text-text-primary font-semibold">Total Repayment</span>
+            <div className="text-right">
+              <div className="text-xl font-bold text-primary">${loan.total.toLocaleString()}</div>
+              <div className="text-sm text-text-secondary">{totalInETH} ETH</div>
             </div>
           </div>
 
-          <div className="modal-info">
-            <p>⚠️ Your wallet must hold at least 10% of the requested loan amount as collateral.</p>
+          {/* Warning */}
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+            <p className="text-sm text-amber-900">⚠️ Your wallet must hold at least 10% of the requested loan amount as collateral.</p>
           </div>
 
+          {/* Confirm Button */}
           <button 
-            className="confirm-btn" 
             onClick={handleConfirm}
             disabled={isProcessing}
+            className="w-full py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing ? 'Processing...' : 'Confirm & Sign Transaction'}
           </button>
         </div>
-
-        <div className="modal-glow"></div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
