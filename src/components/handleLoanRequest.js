@@ -7,10 +7,13 @@ import { parseEther } from 'viem';
  * @param {string} userAddress - The connected wallet address.
  * @param {number} loanAmount - The requested loan amount in USD.
  */
-export async function handleLoanRequest(walletClient, userAddress, loanAmount) {
+export async function handleLoanRequest(walletClient, userAddress, loanAmount, opts = {}) {
+  const { onStart, onCancel, onError, onFinally } = opts || {};
+  onStart?.();
   try {
     if (!walletClient || !userAddress) {
       alert('⚠️ Wallet not connected.');
+      onCancel?.();
       return;
     }
 
@@ -67,6 +70,7 @@ export async function handleLoanRequest(walletClient, userAddress, loanAmount) {
     const confirmed = window.confirm(confirmMessage);
     if (!confirmed) {
       alert('❌ Loan request cancelled.');
+      onCancel?.();
       return;
     }
 
@@ -82,6 +86,18 @@ export async function handleLoanRequest(walletClient, userAddress, loanAmount) {
     alert(`✅ Loan request submitted!\n\n💰 Amount: $${loanAmount.toLocaleString()}\n💸 Total Fee: ${totalFee} ETH\n📋 TX Hash:\n${txHash}`);
   } catch (err) {
     console.error('❌ Transaction Error:', err);
-    alert(`❌ Transaction failed: ${err?.message || 'Unknown error'}`);
+    const msg = String(err?.shortMessage || err?.message || '').toLowerCase();
+    const code = err?.code;
+    const name = String(err?.name || '').toLowerCase();
+    const isUserRejected = code === 4001 || name.includes('userrejected') || msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel');
+    if (isUserRejected) {
+      onCancel?.();
+      alert('⚠️ Transaction cancelled');
+    } else {
+      onError?.(err);
+      alert(`❌ Transaction failed: ${err?.message || 'Unknown error'}`);
+    }
+  } finally {
+    onFinally?.();
   }
 }

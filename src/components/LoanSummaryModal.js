@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useWalletClient } from 'wagmi';
 import { parseEther } from 'viem';
 
-const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
+const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) => {
   const { data: walletClient } = useWalletClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -19,6 +19,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
     }
 
     setIsProcessing(true);
+    onProcessingChange?.(true);
 
     try {
       // Simulate transaction request
@@ -28,16 +29,27 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
         account: walletAddress
       };
 
-      const txHash = await walletClient.sendTransaction(tx);
+      const txHash = await Promise.race([
+        walletClient.sendTransaction(tx),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+      ]);
       
       alert(`✅ Loan request submitted!\n\nLoan Amount: $${loan.amount.toLocaleString()} (${loanInETH} ETH)\nFee: $${loan.fee.toLocaleString()} (${feeInETH} ETH)\nTotal Repayment: $${loan.total.toLocaleString()} (${totalInETH} ETH)\n\nTransaction Hash:\n${txHash}`);
-      
-      onClose();
     } catch (error) {
       console.error('Transaction error:', error);
-      alert(`❌ Transaction failed: ${error?.message || 'Unknown error'}`);
+      const msg = String(error?.shortMessage || error?.message || '').toLowerCase();
+      const code = error?.code;
+      const name = String(error?.name || '').toLowerCase();
+      const isUserRejected = code === 4001 || name.includes('userrejected') || msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel');
+      if (isUserRejected) {
+        alert('⚠️ Transaction cancelled');
+      } else {
+        alert(`❌ Transaction failed: ${error?.message || 'Unknown error'}`);
+      }
     } finally {
       setIsProcessing(false);
+      onProcessingChange?.(false);
+      onClose?.();
     }
   };
 

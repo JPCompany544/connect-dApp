@@ -145,8 +145,9 @@ const Dashboard = () => {
         {selectedLoan && (
           <LoanSummaryModal
             loan={selectedLoan}
-            onClose={() => setSelectedLoan(null)}
+            onClose={() => { setSelectedLoan(null); setIsProcessing(false); }}
             walletAddress={address}
+            onProcessingChange={setIsProcessing}
           />
         )}
 
