@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProcessingModal = ({ isOpen, message = "Processing", subtitle = "Your payment is being securely processed on-chain." }) => {
+const ProcessingModal = ({ isOpen, message = "Processing", subtitle = "Your payment is being securely processed on-chain.", onCancel }) => {
   if (!isOpen) return null;
 
   return (
@@ -20,6 +20,16 @@ const ProcessingModal = ({ isOpen, message = "Processing", subtitle = "Your paym
           <h3 className="text-2xl font-bold text-text-primary">{message}</h3>
           <p className="text-text-secondary">{subtitle}</p>
           <p className="text-sm text-text-secondary/70">This may take 10–15 seconds.</p>
+          {onCancel && (
+            <div className="pt-4">
+              <button
+                onClick={onCancel}
+                className="px-4 py-2 border border-border rounded-button text-sm text-text-secondary hover:text-primary hover:border-primary transition-colors"
+              >
+                Cancel &amp; return to dashboard
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -174,7 +174,17 @@ const Dashboard = () => {
         )}
 
         {/* Processing Modal */}
-        <ProcessingModal isOpen={isProcessing} />
+        <ProcessingModal
+          isOpen={isProcessing}
+          onCancel={() =>
+            forceCleanup({
+              navigate,
+              closeAllModals: () => setSelectedLoan(null),
+              setParentProcessing: setIsProcessing,
+              setLocalProcessing: null
+            })
+          }
+        />
       </div>
     </div>
   );
