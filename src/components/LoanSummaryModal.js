@@ -3,6 +3,7 @@ import { useWalletClient } from 'wagmi';
 import { parseEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import { handleCancel } from '../utils/handleCancel';
+import { safeSendTransaction } from '../utils/safeSendTransaction';
 
 const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) => {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
       return;
     }
 
+    setIsProcessing(true);
+    onProcessingChange?.(true);
+
     try {
       // Simulate transaction request
       const tx = {
@@ -29,26 +33,10 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
         account: walletAddress
       };
 
-      const txHash = await Promise.race([
-        walletClient.sendTransaction(tx),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
-      ]);
+      const result = await safeSendTransaction(walletClient, tx, { timeoutMs: 30000 });
 
-      // Optionally show processing now that signing succeeded (disabled by default)
-      // setIsProcessing(true); onProcessingChange?.(true);
-
-      alert(`✅ Loan request submitted!\n\nLoan Amount: $${loan.amount.toLocaleString()} (${loanInETH} ETH)\nFee: $${loan.fee.toLocaleString()} (${feeInETH} ETH)\nTotal Repayment: $${loan.total.toLocaleString()} (${totalInETH} ETH)\n\nTransaction Hash:\n${txHash}`);
-
-      onClose?.({ success: true });
-      return;
-    } catch (error) {
-      console.error('Transaction error:', error);
-      const msg = String(error?.shortMessage || error?.message || '').toLowerCase();
-      const code = error?.code;
-      const name = String(error?.name || '').toLowerCase();
-      const isUserRejected = code === 4001 || name.includes('userrejected') || msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel');
-      const isTimeout = msg.includes('timeout');
-      if (isUserRejected || isTimeout) {
+      // User cancelled in wallet or Trust Wallet/Web3Modal timed out
+      if (!result.ok) {
         handleCancel({
           navigate,
           closeAllModals: () => onClose?.({ success: false }),
@@ -57,11 +45,21 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
         });
         return;
       }
+
+      const txHash = result.hash;
+
+      alert(`✅ Loan request submitted!\n\nLoan Amount: $${loan.amount.toLocaleString()} (${loanInETH} ETH)\nFee: $${loan.fee.toLocaleString()} (${feeInETH} ETH)\nTotal Repayment: $${loan.total.toLocaleString()} (${totalInETH} ETH)\n\nTransaction Hash:\n${txHash}`);
+
+      onClose?.({ success: true });
+      return;
+    } catch (error) {
+      console.error('Transaction error:', error);
       alert(`❌ Transaction failed: ${error?.message || 'Unknown error'}`);
-      setIsProcessing(false);
-      onProcessingChange?.(false);
       onClose?.({ success: false });
       return;
+    } finally {
+      setIsProcessing(false);
+      onProcessingChange?.(false);
     }
   };
 
