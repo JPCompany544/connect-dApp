@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
+import { useNavigate } from 'react-router-dom';
 import LoanSummaryModal from './LoanSummaryModal';
 import ActiveLoans from './ActiveLoans';
 import FAQ from './FAQ';
@@ -8,6 +9,7 @@ import LiveTransactions from './LiveTransactions';
 const Dashboard = () => {
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
+  const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [customAmount, setCustomAmount] = useState('');
   const [activeLoans] = useState([]);
@@ -43,6 +45,19 @@ const Dashboard = () => {
     }
     handleLoanSelect(amount);
   };
+
+  useEffect(() => {
+    const watcher = () => {
+      if (!document.hidden && selectedLoan) {
+        setSelectedLoan(null);
+        navigate('/dashboard');
+      }
+    };
+
+    document.addEventListener('visibilitychange', watcher);
+
+    return () => document.removeEventListener('visibilitychange', watcher);
+  }, [selectedLoan, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
