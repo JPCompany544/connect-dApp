@@ -4,6 +4,7 @@ import { parseEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
 import { handleCancel } from '../utils/handleCancel';
 import { safeSendTransaction } from '../utils/safeSendTransaction';
+import { forceCleanup } from '../utils/forceCleanup';
 
 const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) => {
   const navigate = useNavigate();
@@ -25,6 +26,17 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
 
     setIsProcessing(true);
     onProcessingChange?.(true);
+
+    let forced = false;
+    const forcedCleanupTimer = setTimeout(() => {
+      forced = true;
+      forceCleanup({
+        navigate,
+        closeAllModals: () => onClose?.({ success: false }),
+        setParentProcessing: onProcessingChange,
+        setLocalProcessing: setIsProcessing
+      });
+    }, 15000);
 
     try {
       // Simulate transaction request
@@ -60,8 +72,11 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
       onClose?.({ success: false });
       return;
     } finally {
-      setIsProcessing(false);
-      onProcessingChange?.(false);
+      clearTimeout(forcedCleanupTimer);
+      if (!forced) {
+        setIsProcessing(false);
+        onProcessingChange?.(false);
+      }
     }
   };
 

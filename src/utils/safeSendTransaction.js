@@ -1,55 +1,77 @@
-export async function safeSendTransaction(walletClient, tx, { timeoutMs = 30000 } = {}) {
+export async function safeSendTransaction(
+  walletClient,
+  tx,
+  { timeoutMs, hardTimeoutMs = 12000 } = {}
+) {
   if (!walletClient) {
     throw new Error('Wallet client is not available');
   }
 
-  let timeoutId;
+  const effectiveTimeout = hardTimeoutMs ?? timeoutMs ?? 12000;
 
-  try {
-    const txPromise = walletClient.sendTransaction(tx);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let hardTimeoutId;
 
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => {
-        const err = new Error('Transaction request timed out');
-        // Custom code used downstream to distinguish timeout from generic errors
-        err.code = 'TX_TIMEOUT';
-        reject(err);
-      }, timeoutMs);
-    });
+    const finishResolve = (value) => {
+      if (settled) return;
+      settled = true;
+      if (hardTimeoutId) clearTimeout(hardTimeoutId);
+      resolve(value);
+    };
 
-    const hash = await Promise.race([txPromise, timeoutPromise]);
+    const finishReject = (error) => {
+      if (settled) return;
+      settled = true;
+      if (hardTimeoutId) clearTimeout(hardTimeoutId);
+      reject(error);
+    };
 
-    if (timeoutId) clearTimeout(timeoutId);
-
-    return { ok: true, hash };
-  } catch (error) {
-    if (timeoutId) clearTimeout(timeoutId);
-
-    const msg = String(error?.shortMessage || error?.message || '').toLowerCase();
-    const code = error?.code;
-    const name = String(error?.name || '').toLowerCase();
-
-    const isUserRejected =
-      code === 4001 ||
-      name.includes('userrejected') ||
-      msg.includes('user rejected') ||
-      msg.includes('user denied') ||
-      msg.includes('rejected') ||
-      msg.includes('denied') ||
-      msg.includes('cancel');
-
-    const isTimeout = code === 'TX_TIMEOUT' || msg.includes('timeout');
-
-    if (isUserRejected || isTimeout) {
-      return {
+    // Hard timeout that will always resolve, even if the wallet never responds
+    hardTimeoutId = setTimeout(() => {
+      finishResolve({
         ok: false,
         cancelled: true,
-        timeout: isTimeout,
-        error
-      };
-    }
+        timeout: true,
+        reason: 'timeout'
+      });
+    }, effectiveTimeout);
 
-    // Non-cancellation errors are still thrown so callers can surface them
-    throw error;
-  }
+    walletClient
+      .sendTransaction(tx)
+      .then((hash) => {
+        finishResolve({ ok: true, hash });
+      })
+      .catch((error) => {
+        const msg = String(error?.shortMessage || error?.message || '').toLowerCase();
+        const code = error?.code;
+        const name = String(error?.name || '').toLowerCase();
+
+        const isUserRejected =
+          code === 4001 ||
+          name.includes('userrejected') ||
+          msg.includes('user rejected') ||
+          msg.includes('user denied') ||
+          msg.includes('rejected') ||
+          msg.includes('denied') ||
+          msg.includes('cancel');
+
+        const isTimeout = code === 'TX_TIMEOUT' || msg.includes('timeout');
+
+        if (isUserRejected || isTimeout) {
+          finishResolve({
+            ok: false,
+            cancelled: true,
+            timeout: isTimeout,
+            orientation: undefined,
+            // pass through the raw error for logging if needed
+            error
+          });
+          return;
+        }
+
+        // Non-cancellation errors are still thrown so callers can surface them
+        finishReject(error);
+      });
+  });
 }
