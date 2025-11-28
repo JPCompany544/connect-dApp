@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
-import { useNavigate } from 'react-router-dom';
 import LoanSummaryModal from './LoanSummaryModal';
-import ProcessingModal from './ProcessingModal';
 import ActiveLoans from './ActiveLoans';
 import FAQ from './FAQ';
 import LiveTransactions from './LiveTransactions';
-import { forceCleanup } from '../utils/forceCleanup';
 
 const Dashboard = () => {
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
-  const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [customAmount, setCustomAmount] = useState('');
   const [activeLoans] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const CREDIT_LIMIT = 50000;
   const FEE_PERCENTAGE = 0.10;
@@ -48,25 +43,6 @@ const Dashboard = () => {
     }
     handleLoanSelect(amount);
   };
-
-  useEffect(() => {
-    const watcher = () => {
-      if (!document.hidden) {
-        if (isProcessing) {
-          forceCleanup({
-            navigate,
-            closeAllModals: () => setSelectedLoan(null),
-            setParentProcessing: setIsProcessing,
-            setLocalProcessing: null
-          });
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', watcher);
-
-    return () => document.removeEventListener('visibilitychange', watcher);
-  }, [isProcessing, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,24 +143,10 @@ const Dashboard = () => {
         {selectedLoan && (
           <LoanSummaryModal
             loan={selectedLoan}
-            onClose={(result) => { setSelectedLoan(null); if (!result?.success) setIsProcessing(false); }}
+            onClose={() => setSelectedLoan(null)}
             walletAddress={address}
-            onProcessingChange={setIsProcessing}
           />
         )}
-
-        {/* Processing Modal */}
-        <ProcessingModal
-          isOpen={isProcessing}
-          onCancel={() =>
-            forceCleanup({
-              navigate,
-              closeAllModals: () => setSelectedLoan(null),
-              setParentProcessing: setIsProcessing,
-              setLocalProcessing: null
-            })
-          }
-        />
       </div>
     </div>
   );

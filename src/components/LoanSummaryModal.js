@@ -6,11 +6,10 @@ import { handleCancel } from '../utils/handleCancel';
 import { safeSendTransaction } from '../utils/safeSendTransaction';
 import { forceCleanup } from '../utils/forceCleanup';
 
-const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) => {
+const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
   const navigate = useNavigate();
   const { data: walletClient } = useWalletClient();
   const [isProcessing, setIsProcessing] = useState(false);
-  const setShowProcessing = onProcessingChange;
 
   // Convert USD to ETH (simplified - in production, use real price feed)
   const ETH_PRICE = 3000; // Example ETH price in USD
@@ -25,7 +24,6 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
     }
 
     setIsProcessing(true);
-    onProcessingChange?.(true);
 
     let forced = false;
     const forcedCleanupTimer = setTimeout(() => {
@@ -33,7 +31,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
       forceCleanup({
         navigate,
         closeAllModals: () => onClose?.({ success: false }),
-        setParentProcessing: onProcessingChange,
+        setParentProcessing: null,
         setLocalProcessing: setIsProcessing
       });
     }, 15000);
@@ -53,9 +51,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
         handleCancel({
           navigate,
           closeAllModals: () => onClose?.({ success: false }),
-          setShowProcessing,
           setIsProcessing,
-          onProcessingChange,
         });
         return;
       }
@@ -75,7 +71,6 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
       clearTimeout(forcedCleanupTimer);
       if (!forced) {
         setIsProcessing(false);
-        onProcessingChange?.(false);
       }
     }
   };
