@@ -9,6 +9,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
   const navigate = useNavigate();
   const { data: walletClient } = useWalletClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const setShowProcessing = onProcessingChange;
 
   // Convert USD to ETH (simplified - in production, use real price feed)
   const ETH_PRICE = 3000; // Example ETH price in USD
@@ -40,7 +41,8 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress, onProcessingChange }) 
         handleCancel({
           navigate,
           closeAllModals: () => onClose?.({ success: false }),
-          setShowProcessing: onProcessingChange,
+          setShowProcessing,
+          setIsProcessing,
           onProcessingChange,
         });
         return;
