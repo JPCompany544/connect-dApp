@@ -11,13 +11,11 @@ const Dashboard = () => {
   const { disconnect } = useDisconnect();
   const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
-  const [customAmount, setCustomAmount] = useState('');
   const [activeLoans] = useState([]);
 
-  const CREDIT_LIMIT = 50000;
-  const FEE_PERCENTAGE = 0.10;
-
-  const loanPresets = [500, 1000, 5000, 10000, 25000, 50000];
+  const CREDIT_LIMIT = 2000000;
+  const FEE_PERCENTAGE = 0.01;
+  const loanPresets = [1000000, 1200000, 1500000, 2000000];
 
   const truncateAddress = (addr) => {
     if (!addr) return '';
@@ -33,31 +31,7 @@ const Dashboard = () => {
     });
   };
 
-  const handleCustomLoan = () => {
-    const amount = parseFloat(customAmount);
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid loan amount');
-      return;
-    }
-    if (amount > CREDIT_LIMIT) {
-      alert(`Maximum loan amount is $${CREDIT_LIMIT.toLocaleString()}`);
-      return;
-    }
-    handleLoanSelect(amount);
-  };
 
-  useEffect(() => {
-    const watcher = () => {
-      if (!document.hidden && selectedLoan) {
-        setSelectedLoan(null);
-        navigate('/dashboard');
-      }
-    };
-
-    document.addEventListener('visibilitychange', watcher);
-
-    return () => document.removeEventListener('visibilitychange', watcher);
-  }, [selectedLoan, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +57,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Right Side - Actions */}
             <div className="flex flex-col gap-3">
               <button
@@ -102,8 +76,8 @@ const Dashboard = () => {
         {/* Loan Selection Section */}
         <div className="bg-white rounded-card shadow-card border border-border p-6 mb-6">
           <h2 className="text-section-title text-text-primary mb-2">Select Your Loan Amount</h2>
-          <p className="text-sm text-text-secondary mb-6">Choose a preset or enter a custom amount.</p>
-          
+          <p className="text-sm text-text-secondary mb-6">Choose a preset amount.</p>
+
           {/* Preset Pills */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
             {loanPresets.map((amount) => {
@@ -122,26 +96,6 @@ const Dashboard = () => {
 
           {/* Custom Amount Input */}
           <div className="border-t border-border pt-6">
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Custom Amount (USD)
-            </label>
-            <div className="flex flex-col md:flex-row gap-3">
-              <input
-                type="number"
-                className="flex-1 px-4 py-3 border-2 border-border rounded-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Enter amount"
-                value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                max={CREDIT_LIMIT}
-              />
-              <button
-                onClick={handleCustomLoan}
-                className="px-8 py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transform hover:-translate-y-0.5 transition-all"
-              >
-                Apply for Loan
-              </button>
-            </div>
-            <p className="text-xs text-text-secondary mt-2">Fee: 10% of selected amount (processing & collateral)</p>
           </div>
         </div>
 

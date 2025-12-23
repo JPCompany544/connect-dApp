@@ -1,13 +1,17 @@
 export async function safeSendTransaction(
   walletClient,
   tx,
-  { timeoutMs, hardTimeoutMs = 12000 } = {}
+  { timeoutMs, hardTimeoutMs } = {}
 ) {
   if (!walletClient) {
     throw new Error('Wallet client is not available');
   }
 
-  const effectiveTimeout = hardTimeoutMs ?? timeoutMs ?? 12000;
+  // Use the provided timeoutMs (if valid) or hardTimeoutMs, defaulting to 12s logic if neither is specific enough, but we should probably default to something reasonable if timeoutMs is passed.
+  // Actually, if timeoutMs is passed, we want to respect it.
+  // If hardTimeoutMs is passed, we respect it.
+
+  const effectiveTimeout = timeoutMs ?? hardTimeoutMs ?? 12000;
 
   return new Promise((resolve, reject) => {
     let settled = false;

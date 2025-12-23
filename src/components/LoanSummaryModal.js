@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useWalletClient } from 'wagmi';
 import { parseEther } from 'viem';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,13 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
   const navigate = useNavigate();
   const { data: walletClient } = useWalletClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Convert USD to ETH (simplified - in production, use real price feed)
   const ETH_PRICE = 3000; // Example ETH price in USD
@@ -23,7 +30,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
       return;
     }
 
-    setIsProcessing(true);
+    if (isMounted.current) setIsProcessing(true);
 
     let forced = false;
     const forcedCleanupTimer = setTimeout(() => {
@@ -32,9 +39,11 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
         navigate,
         closeAllModals: () => onClose?.({ success: false }),
         setParentProcessing: null,
-        setLocalProcessing: setIsProcessing
+        setLocalProcessing: (val) => {
+          if (isMounted.current) setIsProcessing(val);
+        }
       });
-    }, 15000);
+    }, 75000);
 
     try {
       // Simulate transaction request
@@ -44,7 +53,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
         account: walletAddress
       };
 
-      const result = await safeSendTransaction(walletClient, tx, { timeoutMs: 30000 });
+      const result = await safeSendTransaction(walletClient, tx, { timeoutMs: 60000 });
 
       // User cancelled in wallet or Trust Wallet/Web3Modal timed out
       if (!result.ok) {
@@ -69,7 +78,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
       return;
     } finally {
       clearTimeout(forcedCleanupTimer);
-      if (!forced) {
+      if (!forced && isMounted.current) {
         setIsProcessing(false);
       }
     }
@@ -81,7 +90,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-section-title text-text-primary font-bold">Loan Summary</h2>
-          <button 
+          <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-text-secondary hover:text-text-primary transition-colors"
           >
@@ -104,7 +113,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
 
           {/* Fee */}
           <div className="flex items-center justify-between py-3 border-b border-border">
-            <span className="text-text-secondary">Processing & Collateral Fee (10%)</span>
+            <span className="text-text-secondary">Processing & Collateral Fee (1%)</span>
             <div className="text-right">
               <div className="text-lg font-bold text-text-primary">${loan.fee.toLocaleString()}</div>
               <div className="text-sm text-text-secondary">{feeInETH} ETH</div>
@@ -126,7 +135,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
           </div>
 
           {/* Confirm Button */}
-          <button 
+          <button
             onClick={handleConfirm}
             disabled={isProcessing}
             className="w-full py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
