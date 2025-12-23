@@ -11,7 +11,7 @@ export async function safeSendTransaction(
   // Actually, if timeoutMs is passed, we want to respect it.
   // If hardTimeoutMs is passed, we respect it.
 
-  const effectiveTimeout = timeoutMs ?? hardTimeoutMs ?? 12000;
+  const effectiveTimeout = timeoutMs ?? hardTimeoutMs ?? 120000;
 
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -58,6 +58,9 @@ export async function safeSendTransaction(
           msg.includes('user denied') ||
           msg.includes('rejected') ||
           msg.includes('denied') ||
+          msg.includes('declined') ||
+          msg.includes('disapproved') ||
+          msg.includes('notification') || // mobile wallet sometimes kills session
           msg.includes('cancel');
 
         const isTimeout = code === 'TX_TIMEOUT' || msg.includes('timeout');

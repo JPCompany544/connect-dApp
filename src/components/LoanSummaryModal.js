@@ -73,7 +73,8 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
       return;
     } catch (error) {
       console.error('Transaction error:', error);
-      alert(`❌ Transaction failed: ${error?.message || 'Unknown error'}`);
+      // Don't alert on error, just close nicely so user isn't stuck
+      // alert(`❌ Transaction failed: ${error?.message || 'Unknown error'}`);
       onClose?.({ success: false });
       return;
     } finally {
@@ -84,6 +85,14 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
     }
   };
 
+  const handleManualCancel = () => {
+    handleCancel({
+      navigate,
+      closeAllModals: () => onClose?.({ success: false }),
+      setIsProcessing,
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
       <div className="bg-white rounded-card shadow-2xl max-w-md w-full mx-4 animate-slideUp" onClick={(e) => e.stopPropagation()}>
@@ -92,7 +101,8 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
           <h2 className="text-section-title text-text-primary font-bold">Loan Summary</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-text-secondary hover:text-text-primary transition-colors"
+            disabled={isProcessing}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -135,13 +145,24 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
           </div>
 
           {/* Confirm Button */}
-          <button
-            onClick={handleConfirm}
-            disabled={isProcessing}
-            className="w-full py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? 'Processing...' : 'Confirm & Sign Transaction'}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleConfirm}
+              disabled={isProcessing}
+              className="w-full py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isProcessing ? 'Processing Transaction...' : 'Confirm & Sign Transaction'}
+            </button>
+
+            {isProcessing && (
+              <button
+                onClick={handleManualCancel}
+                className="w-full py-2 text-sm text-text-secondary hover:text-red-500 transition-colors"
+              >
+                Cancel / Stuck?
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
