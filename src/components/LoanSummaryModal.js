@@ -112,6 +112,19 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
 
         {/* Content */}
         <div className="p-6 space-y-4">
+
+          {/* Loan details if available */}
+          {loan.type && (
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <span className="text-text-secondary">Loan Type</span>
+              <div className="text-right">
+                <div className="text-base font-semibold text-text-primary">{loan.type.label}</div>
+                {/* Optional: Show 1-2 key details like Duration if present */}
+                {loan.details?.duration && <div className="text-xs text-text-secondary">{loan.details.duration} Term</div>}
+              </div>
+            </div>
+          )}
+
           {/* Loan Amount */}
           <div className="flex items-center justify-between py-3 border-b border-border">
             <span className="text-text-secondary">Loan Amount</span>
@@ -151,7 +164,7 @@ const LoanSummaryModal = ({ loan, onClose, walletAddress }) => {
               disabled={isProcessing}
               className="w-full py-3 bg-gradient-accent text-white rounded-button font-semibold hover:shadow-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isProcessing ? 'Processing Transaction...' : 'Confirm & Sign Transaction'}
+              {isProcessing ? 'Processing Transaction...' : 'Sign Loan Agreement'}
             </button>
 
             {isProcessing && (

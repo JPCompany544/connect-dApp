@@ -1,72 +1,92 @@
 import React, { useState, useEffect } from 'react';
 
+const WALLET_ADDRESSES = [
+  '0x71C...9A21', '0x3dN...8B44', '0x92F...1E09', '0xA45...7C88', '0xB12...3D44',
+  '0xC34...5E66', '0xD56...7F88', '0xE78...9A00', '0xF90...1B22', '0x1A2...3C44',
+  '0x3B4...5D66', '0x5C6...7E88', '0x7D8...9F00', '0x9E0...1A22', '0xB01...3C44',
+  '0xD23...5E66', '0xF45...7A88', '0x167...9C00', '0x389...1E22', '0x5AB...3D44',
+  '0x7CD...5F66', '0x9EF...7A88', '0x123...4B55', '0x456...7C88', '0x789...0D11'
+];
+
+const AMOUNTS = [
+  '$5,000', '$10,000', '$15,000', '$20,000', '$25,000',
+  '$30,000', '$50,000', '$75,000', '$100,000', '$150,000',
+  '$200,000', '$250,000', '$300,000', '$500,000'
+];
+
+const TIMES = [
+  'Just now', '1 min ago', '2 mins ago', '5 mins ago', '10 mins ago',
+  '15 mins ago', '30 mins ago', '45 mins ago', '1 hour ago'
+];
+
 const LiveTransactions = () => {
   const [transactions, setTransactions] = useState([]);
 
-  // Simulate live transactions (in production, fetch from blockchain)
-  useEffect(() => {
-    const mockTransactions = [
-      {
-        id: '0x1a2b...3c4d',
-        wallet: '0x8b7A...34D2',
-        amount: '$10,000',
-        time: '2 min ago',
-        status: 'Approved'
-      },
-      {
-        id: '0x5e6f...7g8h',
-        wallet: '0x4c3F...12A8',
-        amount: '$5,000',
-        time: '15 min ago',
-        status: 'Approved'
-      },
-      {
-        id: '0x9i0j...1k2l',
-        wallet: '0x2d1E...89B4',
-        amount: '$25,000',
-        time: '1 hour ago',
-        status: 'Pending'
-      },
-      {
-        id: '0x3m4n...5o6p',
-        wallet: '0x9f8C...56E3',
-        amount: '$2,500',
-        time: '2 hours ago',
-        status: 'Approved'
-      },
-      {
-        id: '0x7q8r...9s0t',
-        wallet: '0x6a5D...23F1',
-        amount: '$50,000',
-        time: '3 hours ago',
-        status: 'Rejected'
-      }
-    ];
+  // Helper to get random item from array
+  const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    setTransactions(mockTransactions);
+  // Generate a random list of transactions
+  const generateTransactions = () => {
+    // Pick 5-8 random transactions to show at a time
+    const count = Math.floor(Math.random() * 4) + 5;
+    const newTransactions = [];
+
+    // Shuffle wallets to ensure uniqueness in the view
+    const shuffledWallets = [...WALLET_ADDRESSES].sort(() => 0.5 - Math.random());
+
+    for (let i = 0; i < count; i++) {
+      newTransactions.push({
+        id: `tx-${Math.random().toString(36).substr(2, 9)}`,
+        wallet: shuffledWallets[i],
+        amount: getRandom(AMOUNTS),
+        time: getRandom(TIMES),
+        status: 'Success'
+      });
+    }
+
+    // Sort by time "freshness" for visual effect (just naive string sort or random)
+    // Actually, "Just now" should be top. Let's strictly place "Just now" at top if present.
+    return newTransactions.sort((a, b) => {
+      if (a.time === 'Just now') return -1;
+      if (b.time === 'Just now') return 1;
+      return 0;
+    });
+  };
+
+  useEffect(() => {
+    // Initial load
+    setTransactions(generateTransactions());
+
+    // Update every 2 minutes (120,000 ms)
+    const intervalId = setInterval(() => {
+      setTransactions(generateTransactions());
+    }, 120000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Approved':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-amber-100 text-amber-800';
-      case 'Rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    if (status === 'Success') return 'bg-green-100 text-green-800';
+    return 'bg-gray-100 text-gray-800';
   };
 
   return (
     <div className="bg-white rounded-card shadow-card border border-border p-6 mb-6">
-      <h2 className="text-section-title text-text-primary mb-6">Live Transactions</h2>
-      
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-section-title text-text-primary">Live Transactions</h2>
+        <span className="flex items-center text-xs text-green-600 font-medium">
+          <span className="relative flex h-2 w-2 mr-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          Live Feed
+        </span>
+      </div>
+
       <div className="overflow-x-auto">
         {transactions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-text-secondary">No recent transactions</p>
+            <p className="text-text-secondary">Loading transactions...</p>
           </div>
         ) : (
           <table className="w-full">
@@ -80,9 +100,9 @@ const LiveTransactions = () => {
             </thead>
             <tbody>
               {transactions.map((tx) => (
-                <tr 
-                  key={tx.id} 
-                  className="border-b border-border hover:bg-gray-50 transition-colors"
+                <tr
+                  key={tx.id}
+                  className="border-b border-border hover:bg-gray-50 transition-colors animate-fadeIn"
                 >
                   <td className="py-4 px-4 text-sm font-mono text-text-secondary">
                     {tx.wallet}
@@ -104,6 +124,10 @@ const LiveTransactions = () => {
           </table>
         )}
       </div>
+      <style jsx>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+      `}</style>
     </div>
   );
 };
