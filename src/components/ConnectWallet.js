@@ -1,8 +1,6 @@
 // src/components/ConnectWallet.js
 import React, { useEffect, useState } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
-
+import { useAccount } from 'wagmi';
 export default function ConnectWallet({ onConnect, onDisconnect }) {
   const [mounted, setMounted] = useState(false);
   const { isConnected } = useAccount();
