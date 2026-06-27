@@ -19,14 +19,12 @@ const TIMES = [
   '15 mins ago', '30 mins ago', '45 mins ago', '1 hour ago'
 ];
 
-const LiveTransactions = () => {
-  const [transactions, setTransactions] = useState([]);
 
-  // Helper to get random item from array
-  const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+// Helper to get random item from array
+const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  // Generate a random list of transactions
-  const generateTransactions = () => {
+// Generate a random list of transactions
+const generateTransactions = () => {
     // Pick 5-8 random transactions to show at a time
     const count = Math.floor(Math.random() * 4) + 5;
     const newTransactions = [];
@@ -52,6 +50,9 @@ const LiveTransactions = () => {
       return 0;
     });
   };
+
+const LiveTransactions = () => {
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     // Initial load

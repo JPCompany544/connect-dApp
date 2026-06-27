@@ -1,5 +1,3 @@
-import { handleCancel } from "./handleCancel";
-
 export function forceCleanup({
   navigate,
   closeAllModals,

@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 
 function LiveChat() {
   useEffect(() => {
-    const Tawk_API = window.Tawk_API || {};
-    const Tawk_LoadStart = new Date();
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
 
     const s1 = document.createElement('script');
     s1.async = true;

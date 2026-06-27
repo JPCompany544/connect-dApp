@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
-import { useNavigate } from 'react-router-dom';
 import LoanSummaryModal from './LoanSummaryModal';
 import ActiveLoans from './ActiveLoans';
 import FAQ from './FAQ';
@@ -9,7 +8,6 @@ import LiveTransactions from './LiveTransactions';
 const Dashboard = () => {
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
-  const navigate = useNavigate();
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [activeLoans] = useState([]);
 

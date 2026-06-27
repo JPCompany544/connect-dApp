@@ -6,8 +6,6 @@ import { useWeb3Modal } from '@web3modal/wagmi/react';
 export default function ConnectWallet({ onConnect, onDisconnect }) {
   const [mounted, setMounted] = useState(false);
   const { isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
-  const modal = useWeb3Modal();
 
   // Track component mount for hydration
   useEffect(() => {
@@ -22,7 +20,7 @@ export default function ConnectWallet({ onConnect, onDisconnect }) {
     } else {
       onDisconnect?.();
     }
-  }, [isConnected, mounted]);
+  }, [isConnected, mounted, onConnect, onDisconnect]);
 
   if (!mounted) return null;
 

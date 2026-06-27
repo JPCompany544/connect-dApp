@@ -4,16 +4,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ConnectWallet from './components/ConnectWallet';
 import NavBar from './components/NavBar';
 import Homepage from './components/homepage/Homepage';
-import { useAccount, useWalletClient } from 'wagmi';
-import { handleLoanRequest } from './components/handleLoanRequest';
-import LiveChat from './components/LiveChat';
+import { useAccount } from 'wagmi';
 import OnboardingModal from './components/OnboardingModal';
 import Dashboard from './components/Dashboard';
 
 
 function App() {
-  const { isConnected, address } = useAccount();
-  const { data: walletClient } = useWalletClient();
+  const { isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -124,8 +121,8 @@ function App() {
                 <h4 className="font-semibold text-text-primary mb-3">Connect</h4>
                 <div className="space-y-2">
                   <a href="https://t.me/josecsco" target="_blank" rel="noopener noreferrer" className="block text-text-secondary hover:text-primary transition-colors text-sm">Telegram</a>
-                  <a href="#" className="block text-text-secondary hover:text-primary transition-colors text-sm">Twitter</a>
-                  <a href="#" className="block text-text-secondary hover:text-primary transition-colors text-sm">Contact Support</a>
+                  <a href="#/" className="block text-text-secondary hover:text-primary transition-colors text-sm">Twitter</a>
+                  <a href="#/" className="block text-text-secondary hover:text-primary transition-colors text-sm">Contact Support</a>
                 </div>
               </div>
             </div>
